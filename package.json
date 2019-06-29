@@ -13,7 +13,8 @@
   "version": "2.0.0",
   "scripts": {
     "build": "npm run clean && tsc --outDir build",
-    "clean": "rimraf build"
+    "clean": "rimraf build",
+    "prepublish": "npm run build"
   },
   "publishConfig": {
     "access": "public"
