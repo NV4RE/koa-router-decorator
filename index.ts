@@ -1,6 +1,5 @@
-import {Context, Middleware} from 'koa';
-import * as Router from 'koa-router';
-import * as fs from 'fs';
+import * as Router from "koa-router";
+import * as fs from "fs";
 
 export enum HttpMethod {
   HEAD,
@@ -16,7 +15,7 @@ function getFiles(dir: string, files_?: string[]): string[] {
   files_ = files_ || [];
   const files = fs.readdirSync(dir);
   for (let i in files) {
-    const name = dir + '/' + files[i];
+    const name = dir + "/" + files[i];
     if (fs.statSync(name).isDirectory()) {
       getFiles(name, files_);
     } else {
@@ -29,15 +28,13 @@ function getFiles(dir: string, files_?: string[]): string[] {
 /**
  * 格式化返回数据的格式
  */
-async function formatResponse(descriptor: any, ctx: Context) {
+async function formatResponse(descriptor: any, ctx: any) {
   const ret = descriptor.value(ctx);
   if (ret != null) {
     const data = await Promise.resolve(ret);
     if (data != null) {
       // 正常格式
-      ctx.body = {
-        data: data,
-      };
+      ctx.body = data;
     }
   }
 }
@@ -45,23 +42,35 @@ async function formatResponse(descriptor: any, ctx: Context) {
 const router = new Router();
 
 // @router 装饰器
-export function route(path: string, method?: HttpMethod, ...middleware: Array<Middleware>) {
+export function route(
+  path: string,
+  method?: HttpMethod,
+  ...middleware: Array<any>
+) {
   return (target: any, key?: string | symbol, descriptor?: any): void => {
     // Decorator applied to Class (for Constructor injection).
-    if (typeof target === 'function' && key === undefined && descriptor === undefined) {
+    if (
+      typeof target === "function" &&
+      key === undefined &&
+      descriptor === undefined
+    ) {
       if (!target.prototype.router) {
         target.prototype.router = new Router();
       }
       if (middleware.length > 0) {
         target.prototype.router.use(...middleware);
       }
-      router.use(path, target.prototype.router.routes(), target.prototype.router.allowedMethods());
+      router.use(
+        path,
+        target.prototype.router.routes(),
+        target.prototype.router.allowedMethods()
+      );
       return;
-    } else if (typeof target === 'object') {
+    } else if (typeof target === "object") {
       if (!target.router) {
         target.router = new Router();
       }
-      const handleReturnMiddleware = async function (ctx: Context) {
+      const handleReturnMiddleware = async function(ctx: any) {
         await formatResponse(descriptor, ctx);
       };
       // Decorator applied to member (method or property).
@@ -96,9 +105,9 @@ export function route(path: string, method?: HttpMethod, ...middleware: Array<Mi
 }
 
 // 加载所有controller文件
-export function load(controllersDir: string, extension?: string): Router {
-  getFiles(controllersDir).forEach((file) => {
-    if (file.endsWith(extension || '.js')) {
+export function load(controllersDir: string, match: RegExp = /\.js/i): Router {
+  getFiles(controllersDir).forEach(file => {
+    if (match.test(file)) {
       require(file);
     }
   });
