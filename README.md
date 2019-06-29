@@ -4,7 +4,7 @@
 ## Use
 install by:
 ```bash
-npm i koa-decorator
+npm i @nv4re/koa-decorator
 ```
 then use in code:
 ```js
